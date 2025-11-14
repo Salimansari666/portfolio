@@ -146,6 +146,17 @@ async def health():
 @app.on_event("startup")
 async def on_startup():
     logger.info("Starting backend app. Supported dataset templates: %s", service.supported if service else {})
+
+
+@app.get("/ready")
+async def ready():
+    """Readiness probe: returns 200 when the service has been constructed
+    and can accept lightweight requests. This does not perform heavy model calls.
+    """
+    ok = service is not None
+    if not ok:
+        raise HTTPException(status_code=503, detail="service not ready: HF_TOKEN missing")
+    return {"status": "ready"}
 import asyncio
 import logging
 from typing import Optional
